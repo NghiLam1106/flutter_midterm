@@ -20,16 +20,18 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      // Theo dõi thay đổi trạng thái của người dùng
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
+            return Center(child: CircularProgressIndicator());
           } else if (snapshot.hasData) {
-            return ProductScreen();
+            User? user = FirebaseAuth.instance.currentUser;
+            if (user != null) {
+              return ProductScreen();
+            } else {
+              return LoginScreen();
+            }
           } else {
             return LoginScreen();
           }

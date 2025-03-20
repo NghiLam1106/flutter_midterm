@@ -65,7 +65,7 @@ class ProductService {
           return AlertDialog(
             title: Text('Xác nhận xóa'),
             content: Text('Bạn có chắc chắn muốn xóa sản phẩm này không?'),
-            actions: <Widget>[
+             actions: <Widget>[
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop(false);
