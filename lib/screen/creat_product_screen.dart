@@ -1,8 +1,8 @@
 import 'dart:io';
 
+import 'package:dnt_22itb143/service/image_service.dart';
 import 'package:dnt_22itb143/service/product_service.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 
 class CreatProductScreen extends StatefulWidget {
   const CreatProductScreen({super.key});
@@ -16,7 +16,6 @@ class CreatProductScreenState extends State<CreatProductScreen> {
   String productType = '';
   String productPrice = '';
   File? productImage;
-  final ImagePicker picker = ImagePicker();
   String productId = '';
   List<Map<String, dynamic>> productsList = [];
 
@@ -68,8 +67,16 @@ class CreatProductScreenState extends State<CreatProductScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   ElevatedButton(
-                    onPressed: () {
-                      imagePicker();
+                    onPressed: () async {
+                      ImageService imageService = ImageService();
+                      File? imageFile =
+                          await imageService.imagePicker(); // Chờ lấy ảnh xong
+                      if (imageFile != null) {
+                        setState(() {
+                          // Cập nhật UI sau khi có ảnh
+                          productImage = imageFile;
+                        });
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       minimumSize: Size(200, 50),
@@ -142,47 +149,4 @@ class CreatProductScreenState extends State<CreatProductScreen> {
       ),
     );
   }
-
-  Future<void> imagePicker() async {
-    final image = await picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      setState(() {
-        productImage = File(image.path);
-      });
-    }
-  }
-
-  
-
-  // Future<void> addProduct() async {
-  //   if (_formkey.currentState!.validate()) {
-  //     String ImageURL = '';
-
-  //     if (productImage != null) {
-  //       ImageURL = await saveImageLocally(productImage!);
-  //     }
-
-  //     try {
-  //       await FirebaseFirestore.instance.collection('products').add({
-  //         'type': productType,
-  //         'price': productPrice,
-  //         'image': ImageURL,
-  //       });
-
-  //       // Hiển thị thông báo thêm sản phẩm thành công
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(content: Text('Thêm sản phẩm thành công!')),
-  //       );
-
-  //       // Truyền sản phẩm mới về màn hình trước
-  //       Navigator.pop(context, {
-  //         'type': productType,
-  //         'price': productPrice,
-  //         'image': ImageURL,
-  //       });
-  //     } catch (e) {
-  //       print(e);
-  //     }
-  //   }
-  // }
 }

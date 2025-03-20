@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dnt_22itb143/service/image_service.dart';
 import 'package:dnt_22itb143/service/product_service.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 
 class UpdateProductScreen extends StatefulWidget {
   final String productId;
@@ -22,7 +22,6 @@ class UpdateProductScreenState extends State<UpdateProductScreen> {
   late TextEditingController priceController;
   File? productImage;
   String productImageUrl = '';
-  final ImagePicker picker = ImagePicker();
 
   @override
   void initState() {
@@ -51,15 +50,6 @@ class UpdateProductScreenState extends State<UpdateProductScreen> {
       }
     } catch (e) {
       print('Lỗi lấy dữ liệu sản phẩm: $e');
-    }
-  }
-
-  Future<void> imagePicker() async {
-    final image = await picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      setState(() {
-        productImage = File(image.path);
-      });
     }
   }
 
@@ -108,7 +98,17 @@ class UpdateProductScreenState extends State<UpdateProductScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ElevatedButton(
-                    onPressed: imagePicker,
+                    onPressed: () async {
+                      ImageService imageService = ImageService();
+                      File? imageFile =
+                          await imageService.imagePicker(); // Chờ lấy ảnh xong
+                      if (imageFile != null) {
+                        setState(() {
+                          // Cập nhật UI sau khi có ảnh
+                          productImage = imageFile;
+                        });
+                      }
+                    },
                     style: ElevatedButton.styleFrom(
                       minimumSize: Size(200, 50),
                     ),

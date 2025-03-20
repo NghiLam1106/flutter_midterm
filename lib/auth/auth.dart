@@ -31,7 +31,6 @@ class Auth {
               backgroundColor: Colors.red,
             ),
           );
-          await user.sendEmailVerification(); // Gửi lại email xác minh
         } else {
           // Nếu đã xác minh, chuyển hướng đến màn hình sản phẩm
           Navigator.pop(context); // Đóng hộp thoại tải
@@ -46,11 +45,14 @@ class Auth {
       if (e.code == 'wrong-password' || e.code == 'user-not-found') {
         errorMessage =
             "Bạn sai tài khoản hoặc mật khẩu, vui lòng đăng nhập lại";
+        Navigator.pop(context);
       } else if (e.code == 'invalid-email') {
         errorMessage = "Địa chỉ email không hợp lệ, vui lòng nhập lại";
+        Navigator.pop(context);
       } else {
         errorMessage = e.message ??
             "An unknown error occurred"; // Other Firebase error messages
+        Navigator.pop(context);
       }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -80,10 +82,14 @@ class Auth {
       // Hiển thị trạng thái tải (tùy chọn)
       showLoadingDialog(context);
 
-      final user = await _auth.createUserWithEmailAndPassword(
+      UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
+
+      User? user = userCredential.user;
+
       // ignore: unnecessary_null_comparison
       if (user != null) {
         Navigator.pop(context); // Đóng hộp thoại tải
@@ -93,16 +99,20 @@ class Auth {
             builder: (context) => LoginScreen(),
           ),
         );
+        await user.sendEmailVerification(); // Gửi email xác minh
       }
     } on FirebaseAuthException catch (e) {
       String errorMessage;
       if (e.code == 'email-already-in-use') {
         errorMessage = "Email đã được sử dụng, vui lòng chọn email khác";
+        Navigator.pop(context);
       } else if (e.code == 'weak-password') {
         errorMessage = "Mật khẩu quá yếu, vui lòng chọn mật khẩu khác";
+        Navigator.pop(context);
       } else {
         errorMessage = e.message ??
             "An unknown error occurred"; // Other Firebase error messages
+        Navigator.pop(context);
       }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

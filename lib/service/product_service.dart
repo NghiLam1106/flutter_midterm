@@ -43,12 +43,12 @@ class ProductService {
           SnackBar(content: Text('Thêm sản phẩm thành công!')),
         );
 
-        // Truyền sản phẩm mới về màn hình trước
-        Navigator.pop(context, {
-          'type': productType,
-          'price': productPrice,
-          'image': ImageURL,
-        });
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductScreen(),
+          ),
+        );
       } catch (e) {
         print(e);
       }
