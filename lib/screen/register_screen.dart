@@ -127,7 +127,7 @@ class RegisterScreenState extends State<RegisterScreen> {
                   final String password = passwordController.text;
 
                   final authInstance = Auth();
-                  authInstance.register(email, password, context as Builder);
+                  authInstance.register(email, password, context);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
