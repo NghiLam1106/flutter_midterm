@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dnt_22itb143/service/image_service.dart';
 import 'package:dnt_22itb143/service/product_service.dart';
@@ -18,6 +19,7 @@ class UpdateProductScreen extends StatefulWidget {
 
 class UpdateProductScreenState extends State<UpdateProductScreen> {
   final _formkey = GlobalKey<FormState>();
+  late TextEditingController nameController;
   late TextEditingController typeController;
   late TextEditingController priceController;
   File? productImage;
@@ -26,6 +28,7 @@ class UpdateProductScreenState extends State<UpdateProductScreen> {
   @override
   void initState() {
     super.initState();
+    nameController = TextEditingController();
     typeController = TextEditingController();
     priceController = TextEditingController();
     fetchProductData();
@@ -43,9 +46,10 @@ class UpdateProductScreenState extends State<UpdateProductScreen> {
             productDoc.data() as Map<String, dynamic>;
 
         setState(() {
-          typeController.text = productData['type'] ?? '';
-          priceController.text = productData['price'].toString();
-          productImageUrl = productData['image'] ?? ''; // Lưu URL ảnh
+          nameController.text = productData['idsanpham'] ?? '';
+          typeController.text = productData['loaisp'] ?? '';
+          priceController.text = productData['gia'].toString();
+          productImageUrl = productData['hinhanh'] ?? ''; // Lưu URL ảnh
         });
       }
     } catch (e) {
@@ -74,6 +78,14 @@ class UpdateProductScreenState extends State<UpdateProductScreen> {
                 key: _formkey,
                 child: Column(
                   children: [
+                    TextFormField(
+                      decoration: InputDecoration(labelText: 'Tên sản phẩm'),
+                      controller: nameController,
+                      validator: (value) => value == null || value.isEmpty
+                          ? 'Không được để trống'
+                          : null,
+                    ),
+                    SizedBox(height: 25),
                     TextFormField(
                       decoration: InputDecoration(labelText: 'Loại sản phẩm'),
                       controller: typeController,
@@ -139,6 +151,7 @@ class UpdateProductScreenState extends State<UpdateProductScreen> {
                     ),
                     onPressed: () async {
                       await ProductService().updateProduct(
+                        nameController.text,
                         productImageUrl,
                         productImage,
                         typeController.text,

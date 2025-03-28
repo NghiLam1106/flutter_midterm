@@ -15,6 +15,8 @@ class ProductScreen extends StatefulWidget {
 class ProductScreenState extends State<ProductScreen> {
   final _auth = FirebaseAuth.instance;
   List<Map<String, dynamic>> productsList = [];
+  List<Map<String, dynamic>> filteredProducts = [];
+  String searchQuery = '';
 
   @override
   void initState() {
@@ -26,6 +28,21 @@ class ProductScreenState extends State<ProductScreen> {
     List<Map<String, dynamic>> products = await ProductService().getProducts();
     setState(() {
       productsList = products;
+      filteredProducts = products; // Khởi tạo danh sách sản phẩm
+    });
+  }
+
+  // Tìm kiếm sản phẩm theo tên hoặc loại
+  void _searchProducts(String query) {
+    setState(() {
+      searchQuery = query.toLowerCase();
+      filteredProducts = productsList.where((product) {
+        return product['idsanpham']
+                .toString()
+                .toLowerCase()
+                .contains(searchQuery) ||
+            product['loaisp'].toString().toLowerCase().contains(searchQuery);
+      }).toList();
     });
   }
 
@@ -37,13 +54,23 @@ class ProductScreenState extends State<ProductScreen> {
         children: <Widget>[
           SizedBox(height: 25),
           Padding(
-            padding: EdgeInsetsDirectional.only(start: 15, end: 15),
+            padding: EdgeInsetsDirectional.only(start: 20, end: 15, top: 10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Danh sách sản phẩm',
-                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                Expanded(
+                  child: TextField(
+                    decoration: InputDecoration(
+                      labelText: 'Tìm kiếm',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                      ),
+                    ),
+                    onSubmitted: (value) {
+                      _searchProducts(value);
+                    },
+                    // style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                  ),
                 ),
                 IconButton(
                   icon: Icon(Icons.logout),
@@ -60,70 +87,116 @@ class ProductScreenState extends State<ProductScreen> {
               ],
             ),
           ),
+          SizedBox(height: 15),
+          Text(
+            'Danh sách sản phẩm',
+            style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+          ),
           Expanded(
-            child: ListView.builder(
-              itemCount: productsList.length,
-              itemBuilder: (context, index) {
-                var product = productsList[index];
-                return Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  child: Card(
-                    child: ListTile(
-                      leading: Image.network(
-                        product['image'],
-                        width: 70,
-                        height: 70,
-                        fit: BoxFit.cover,
+            child: productsList.isEmpty
+                ? Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.shopping_bag_outlined,
+                          size: 80, color: Colors.grey),
+                      SizedBox(height: 10),
+                      Text(
+                        "Chưa có sản phẩm nào!",
+                        style: TextStyle(fontSize: 18, color: Colors.grey),
                       ),
-                      // ignore: prefer_interpolation_to_compose_strings
-                      title: Text("Loại: " + product['type']),
-                      // ignore: prefer_interpolation_to_compose_strings
-                      subtitle: Text("Giá: " + product['price']),
-
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
+                    ],
+                  )
+                : filteredProducts.isEmpty
+                    ? Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          IconButton(
-                            icon: Icon(Icons.edit, color: Colors.green),
-                            onPressed: () async {
-                              final updatedProduct = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => UpdateProductScreen(
-                                      productId: product['docId']),
-                                ),
-                              );
-
-                              if (updatedProduct != null) {
-                                setState(() {
-                                  // Cập nhật danh sách sản phẩm sau khi nhận dữ liệu mới từ màn hình cập nhật
-                                  productsList[index] = updatedProduct;
-                                });
-                              }
-                            },
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.delete, color: Colors.red),
-                            onPressed: () async {
-                              List<Map<String, dynamic>> updatedList =
-                                  await ProductService().deleteProduct(
-                                product['docId'],
-                                index,
-                                context,
-                                productsList,
-                              );
-                              setState(() {
-                                productsList = updatedList;
-                              });
-                            },
+                          Icon(Icons.search_off, size: 80, color: Colors.grey),
+                          SizedBox(height: 10),
+                          Text(
+                            "Không tìm thấy sản phẩm nào!",
+                            style: TextStyle(fontSize: 18, color: Colors.grey),
                           ),
                         ],
+                      )
+                    : ListView.builder(
+                        itemCount: filteredProducts.length,
+                        itemBuilder: (context, index) {
+                          var product = filteredProducts[index];
+                          return Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 5),
+                            child: Card(
+                              child: ListTile(
+                                leading: Image.network(
+                                  product['hinhanh'],
+                                  width: 70,
+                                  height: 70,
+                                  fit: BoxFit.cover,
+                                ),
+                                title: Text(product['idsanpham']),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // ignore: prefer_interpolation_to_compose_strings
+                                    Text("Loại: " + product['loaisp']),
+                                    // ignore: prefer_interpolation_to_compose_strings
+                                    Text("Giá: ${product['gia']}"),
+                                  ],
+                                ),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon:
+                                          Icon(Icons.edit, color: Colors.green),
+                                      onPressed: () async {
+                                        final updatedProduct =
+                                            await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                UpdateProductScreen(
+                                                    productId:
+                                                        product['docId']),
+                                          ),
+                                        );
+
+                                        if (updatedProduct != null) {
+                                          setState(() {
+                                            // Cập nhật danh sách sản phẩm sau khi nhận dữ liệu mới từ màn hình cập nhật
+                                            productsList[index] =
+                                                updatedProduct;
+                                          });
+                                        }
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon:
+                                          Icon(Icons.delete, color: Colors.red),
+                                      onPressed: () async {
+                                        List<Map<String, dynamic>> updatedList =
+                                            await ProductService()
+                                                .deleteProduct(
+                                          product['docId'],
+                                          index,
+                                          context,
+                                          productsList,
+                                        );
+                                        setState(
+                                          () {
+                                            productsList = updatedList;
+                                            filteredProducts = updatedList;
+                                          },
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
-                    ),
-                  ),
-                );
-              },
-            ),
           ),
         ],
       ),

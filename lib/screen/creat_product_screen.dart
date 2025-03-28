@@ -15,6 +15,7 @@ class CreatProductScreenState extends State<CreatProductScreen> {
   final _formkey = GlobalKey<FormState>();
   String productType = '';
   String productPrice = '';
+  String productName = '';
   File? productImage;
   String productId = '';
   List<Map<String, dynamic>> productsList = [];
@@ -42,6 +43,14 @@ class CreatProductScreenState extends State<CreatProductScreen> {
                   key: _formkey,
                   child: Column(
                     children: [
+                      TextFormField(
+                        decoration: InputDecoration(labelText: 'Tên sản phẩm'),
+                        onChanged: (value) => productName = value,
+                        validator: (value) => value == null || value.isEmpty
+                            ? 'Không được để trống'
+                            : null,
+                      ),
+                      SizedBox(height: 25),
                       TextFormField(
                         decoration: InputDecoration(labelText: 'Loại sản phẩm'),
                         onChanged: (value) => productType = value,
@@ -114,6 +123,7 @@ class CreatProductScreenState extends State<CreatProductScreen> {
                     onPressed: () {
                       ProductService productService = ProductService();
                       productService.addProduct(
+                        productName,
                         productType,
                         productPrice,
                         productImage,

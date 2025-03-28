@@ -20,8 +20,13 @@ class ProductService {
   }
 
   // Thêm sản phẩm vào Firestore
-  Future<void> addProduct(String productType, String productPrice,
-      File? productImage, GlobalKey<FormState> formkey, context) async {
+  Future<void> addProduct(
+      String productName,
+      String productType,
+      String productPrice,
+      File? productImage,
+      GlobalKey<FormState> formkey,
+      context) async {
     if (formkey.currentState!.validate()) {
       // ignore: non_constant_identifier_names
       String ImageURL = '';
@@ -33,9 +38,10 @@ class ProductService {
 
       try {
         await FirebaseFirestore.instance.collection('products').add({
-          'type': productType,
-          'price': productPrice,
-          'image': ImageURL,
+          'idsanpham': productName,
+          'loaisp': productType,
+          'gia': productPrice,
+          'hinhanh': ImageURL,
         });
 
         // Hiển thị thông báo thêm sản phẩm thành công
@@ -65,7 +71,7 @@ class ProductService {
           return AlertDialog(
             title: Text('Xác nhận xóa'),
             content: Text('Bạn có chắc chắn muốn xóa sản phẩm này không?'),
-             actions: <Widget>[
+            actions: <Widget>[
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop(false);
@@ -108,8 +114,15 @@ class ProductService {
   }
 
   // Cập nhật sản phẩm
-  Future<void> updateProduct(productImageUrl, productImage, typeController,
-      priceController, productId, context, GlobalKey<FormState> formkey) async {
+  Future<void> updateProduct(
+      nameController,
+      productImageUrl,
+      productImage,
+      typeController,
+      priceController,
+      productId,
+      context,
+      GlobalKey<FormState> formkey) async {
     if (formkey.currentState!.validate()) {
       try {
         String updatedImageUrl = productImageUrl;
@@ -124,9 +137,10 @@ class ProductService {
             .collection('products')
             .doc(productId)
             .update({
-          'type': typeController,
-          'price': priceController,
-          'image': updatedImageUrl,
+          'idsanpham': nameController,
+          'loaisp': typeController,
+          'gia': priceController,
+          'hinhanh': updatedImageUrl,
         });
 
         // Hiển thị thông báo cập nhật thành công
